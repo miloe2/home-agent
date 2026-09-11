@@ -8,3 +8,5 @@ data/cache/*
 data/reports/*
 !data/cache/.gitkeep
 !data/reports/.gitkeep
+!data/reports/_daily/
+!data/reports/_daily/*.md
