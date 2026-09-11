@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+  <header>
+    <resultCode>00</resultCode>
+    <resultMsg>NORMAL SERVICE.</resultMsg>
+  </header>
+  <body>
+    <items>
+      <item>
+        <aptDong></aptDong>
+        <aptNm>테스트합성 아파트A</aptNm>
+        <buildYear>2015</buildYear>
+        <cdealDay></cdealDay>
+        <cdealType></cdealType>
+        <dealAmount>  55,000</dealAmount>
+        <dealDay>3</dealDay>
+        <dealMonth>8</dealMonth>
+        <dealYear>2025</dealYear>
+        <dealingGbn>중개거래</dealingGbn>
+        <excluUseAr>59.98</excluUseAr>
+        <floor>7</floor>
+        <jibun>123-4</jibun>
+        <roadNm>테스트로 10</roadNm>
+        <sggCd>11530</sggCd>
+        <umdNm>테스트동</umdNm>
+      </item>
+      <item>
+        <aptDong></aptDong>
+        <aptNm>테스트합성 아파트B</aptNm>
+        <buildYear>2010</buildYear>
+        <cdealDay></cdealDay>
+        <cdealType></cdealType>
+        <dealAmount>48,500</dealAmount>
+        <dealDay>15</dealDay>
+        <dealMonth>8</dealMonth>
+        <dealYear>2025</dealYear>
+        <dealingGbn>직거래</dealingGbn>
+        <excluUseAr>58.5</excluUseAr>
+        <floor>2</floor>
+        <jibun>55-1</jibun>
+        <roadNm>테스트로 22</roadNm>
+        <sggCd>11530</sggCd>
+        <umdNm>테스트동</umdNm>
+      </item>
+      <item>
+        <aptDong></aptDong>
+        <aptNm>테스트합성 아파트C(해제)</aptNm>
+        <buildYear>2018</buildYear>
+        <cdealDay>25</cdealDay>
+        <cdealType>해제</cdealType>
+        <dealAmount>60,000</dealAmount>
+        <dealDay>1</dealDay>
+        <dealMonth>8</dealMonth>
+        <dealYear>2025</dealYear>
+        <dealingGbn>중개거래</dealingGbn>
+        <excluUseAr>59.5</excluUseAr>
+        <floor>10</floor>
+        <jibun>77-2</jibun>
+        <roadNm>테스트로 30</roadNm>
+        <sggCd>11530</sggCd>
+        <umdNm>테스트동</umdNm>
+      </item>
+    </items>
+    <numOfRows>1000</numOfRows>
+    <pageNo>1</pageNo>
+    <totalCount>3</totalCount>
+  </body>
+</response>

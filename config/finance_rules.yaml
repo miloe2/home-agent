@@ -1,0 +1,12 @@
+schema_version: '1.0'
+programs:
+  - id: didimdol
+    verification_status: unverified
+    verified_at: null
+    source_urls: []
+    required_fields: [annual_gross_income_krw, net_assets_krw]
+  - id: bogeumjari
+    verification_status: unverified
+    verified_at: null
+    source_urls: []
+    required_fields: [annual_gross_income_krw, net_assets_krw]

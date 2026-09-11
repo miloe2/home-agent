@@ -1,0 +1,66 @@
+household:
+  marital_status: married
+  newlywed: true
+  first_time_homebuyer: true
+  homeowner: false
+  current_housing: SH public rental
+  remaining_stable_housing_years: 10
+housing_strategy:
+  urgency: very_low
+  reason:
+    - 현재 SH 주택에서 약 10년 더 안정적으로 거주 가능
+    - FOMO 때문에 아무 집이나 살 필요 없음
+purchase_goal:
+  purpose: [long_term_primary_residence, asset_preservation]
+  rental_property: false
+  investment_only_property: false
+property_preferences:
+  property_type:
+    include: [apartment]
+    exclude: [officetel, villa, regional_housing_cooperative, rental_only]
+  location:
+    include: [Seoul, Gyeonggi]
+    preference: {Seoul: preferred_but_not_required, Gyeonggi: acceptable}
+  commute:
+    mode: multi_job_centers
+    job_centers:
+      - {name: seongsu, label: "성수", weight: 0.9}
+      - {name: gangnam, label: "강남", weight: 1.0}
+      - {name: gvalley, label: "가산/구로디지털단지", weight: 0.8}
+      - {name: pangyo, label: "성남/판교", weight: 1.0}
+      - {name: munjeong, label: "문정", weight: 0.7}
+    metric: door_to_door
+    ideal_one_way_minutes: 40
+    acceptable_one_way_minutes: 60
+    strongly_penalize_over_minutes: 60
+    status: not_evaluated
+    workplace_address: null
+  area:
+    ideal_exclusive_m2: 59
+    acceptable_min_exclusive_m2: 50
+    strong_penalty_below_m2: 40
+  complex:
+    prefer_large_complex: true
+    ideal_households_min: 500
+    small_complex_penalty_below: 300
+    very_small_complex_penalty_below: 150
+  age:
+    prefer_new_build: true
+    new_build_bonus: true
+    old_build_allowed: true
+budget:
+  preferred_max_price_krw: 600000000
+  stretch_max_price_krw: 700000000
+finance:
+  interested_in_policy_mortgage: true
+  programs_of_interest: [didimdol, bogeumjari, first_time_homebuyer, newlywed]
+  annual_gross_income_krw: null
+  reported_business_income_krw: null
+  net_assets_krw: null
+  available_cash_krw: null
+  existing_monthly_debt_payment_krw: null
+decision_philosophy:
+  - 살 수 있다와 살 만하다를 구분할 것
+  - 애매한 집은 보류가 기본값
+  - 싸 보이는 집에는 왜 싼지 반드시 찾을 것
+  - 서울이라는 이유만으로 소형면적을 정당화하지 말 것

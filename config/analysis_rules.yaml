@@ -1,0 +1,4 @@
+schema_version: '1.0'
+sale_history_repeat_count: 2
+comparison_recent_months: 12
+comparison_fallback_months: 24
