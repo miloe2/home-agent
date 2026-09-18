@@ -1,4 +1,8 @@
+import json
+from pathlib import Path
+
 from home_agent import applyhome
+from home_agent.core import kst_date
 
 
 def test_parse_area_variants():
@@ -49,6 +53,23 @@ def test_normalize_candidate_handles_missing_amount():
     assert c["price_krw"] is None
 
 
+def test_kst_date_converts_utc_boundary():
+    assert kst_date("2026-09-17T23:30:00+00:00") == "2026-09-18"
+    assert kst_date("2026-09-18T08:30:00+09:00") == "2026-09-18"
+
+
+def test_optional_supply_normalizes_suji_fixture():
+    fixture_path = Path(__file__).parent / "fixtures" / "applyhome" / "suji_optional.json"
+    fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+    notice = applyhome.normalize_notice(fixture["notice"], fixture["supply_type"])
+    candidate = applyhome.normalize_candidate(notice, fixture["model"])
+    assert candidate["name"] == "수지자이 에디시온"
+    assert candidate["supply_type"] == "OPTIONAL"
+    assert candidate["region"] == "경기 용인시 수지구 동천동"
+    assert candidate["announcement_date"] == "2026-09-16"
+    assert candidate["rcept_bgnde"] == "2026-09-18"
+
+
 def test_fetch_open_notices_paginates_and_stops(monkeypatch):
     calls = []
 
@@ -67,6 +88,21 @@ def test_fetch_open_notices_paginates_and_stops(monkeypatch):
 
 def test_fetch_open_notices_without_key_returns_empty():
     assert applyhome.fetch_open_notices("2026-09-11", ["서울"], "") == []
+
+
+def test_fetch_open_notices_includes_optional_suji_on_receipt_day(monkeypatch):
+    fixture = json.loads((Path(__file__).parent / "fixtures" / "applyhome" / "suji_optional.json").read_text(encoding="utf-8"))
+
+    def fake_http_get(url, params):
+        if "getOPTLttotPblancDetail" in url:
+            return {"data": [fixture["notice"]]}
+        return {"data": []}
+
+    monkeypatch.setattr(applyhome, "_http_get", fake_http_get)
+    result = applyhome.fetch_open_notices("2026-09-17T23:30:00+00:00", ["경기"], "key")
+    assert len(result) == 1
+    assert result[0]["HOUSE_NM"] == "수지자이 에디시온"
+    assert result[0]["supply_type"] == "OPTIONAL"
 
 
 def test_fetch_house_models_without_key_returns_empty():

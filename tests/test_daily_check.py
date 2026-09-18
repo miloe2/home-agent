@@ -88,3 +88,15 @@ def test_run_skips_candidates_missing_required_fields(tmp_path, monkeypatch):
     daily_check.run(as_of="2026-09-11T00:00:00+00:00", config_dir=config_dir, data_dir=data_dir)
 
     assert called == []
+
+
+def test_run_includes_notice_on_announcement_date_before_receipt(tmp_path, monkeypatch):
+    notice = _fake_notice()
+    notice.update({"RCRIT_PBLANC_DE": "2026-09-16", "RCEPT_BGNDE": "2026-09-18", "RCEPT_ENDDE": "2026-09-19"})
+    monkeypatch.setattr(daily_check.applyhome, "fetch_open_notices", lambda *a: [notice])
+    monkeypatch.setattr(daily_check.applyhome, "fetch_house_models", lambda *a: [_fake_model()])
+    monkeypatch.setattr(daily_check, "analyze_property", lambda inp, **kw: _fake_result(inp["name"]))
+    monkeypatch.setattr(daily_check.narrate, "narrate", lambda *a, **k: None)
+
+    path = daily_check.run(as_of="2026-09-16T00:00:00+09:00", config_dir=tmp_path / "config", data_dir=tmp_path / "data")
+    assert "오늘 신규 발표" in path.read_text(encoding="utf-8")

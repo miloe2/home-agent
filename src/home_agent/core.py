@@ -18,6 +18,24 @@ def utc_now() -> str:
     return datetime.now(UTC).isoformat()
 
 
+def kst_now() -> datetime:
+    from zoneinfo import ZoneInfo
+
+    return datetime.now(ZoneInfo("Asia/Seoul"))
+
+
+def kst_date(as_of: str | datetime | None = None) -> str:
+    """Return the scanner date in Korea, converting an aware input first."""
+    from zoneinfo import ZoneInfo
+
+    value = datetime.now(UTC) if as_of is None else as_of
+    if isinstance(value, str):
+        value = datetime.fromisoformat(value)
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=UTC)
+    return value.astimezone(ZoneInfo("Asia/Seoul")).date().isoformat()
+
+
 def load_yaml(path: Path) -> dict[str, Any]:
     if yaml is None:
         raise RuntimeError("PyYAML is required to load configuration")

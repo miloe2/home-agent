@@ -7,7 +7,7 @@ from typing import Any
 
 from . import applyhome, narrate, seen_store
 from .analyze import analyze_property
-from .core import utc_now
+from .core import kst_date, utc_now
 from .storage import ReportStore
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -29,7 +29,7 @@ def _load_dotenv(path: Path) -> None:
 
 
 def _seen_key(candidate: dict[str, Any]) -> str:
-    return f"{candidate['pblanc_no']}:{candidate['model_no']}"
+    return f"{candidate.get('pblanc_no')}:{candidate.get('supply_type', 'APT')}:{candidate.get('model_no')}"
 
 
 def run(as_of: str | None = None, config_dir: str | Path = "config", data_dir: str | Path = "data") -> Path:
@@ -44,21 +44,42 @@ def run(as_of: str | None = None, config_dir: str | Path = "config", data_dir: s
     seen = seen_store.load(seen_path)
     store = ReportStore(data_dir / "reports")
 
+    today = kst_date(as_of)
     notices = applyhome.fetch_open_notices(as_of, TARGET_REGIONS, molit_key)
     digest: list[dict[str, Any]] = []
+    notice_seen: set[tuple[str, str]] = set()
 
     for notice in notices:
         pblanc_no = notice.get("PBLANC_NO")
         house_manage_no = notice.get("HOUSE_MANAGE_NO")
         if not pblanc_no or not house_manage_no:
             continue
-        models = applyhome.fetch_house_models(pblanc_no, house_manage_no, molit_key)
+        supply_type = notice.get("supply_type", "APT")
+        notice_identity = (str(pblanc_no), supply_type)
+        if notice_identity in notice_seen:
+            continue
+        notice_seen.add(notice_identity)
+        if supply_type == "APT":
+            # Keep the old three-argument call usable for integrations that
+            # monkeypatch or wrap the original public function.
+            models = applyhome.fetch_house_models(pblanc_no, house_manage_no, molit_key)
+        else:
+            models = applyhome.fetch_house_models(pblanc_no, house_manage_no, molit_key, supply_type)
         for model in models:
             candidate = applyhome.normalize_candidate(notice, model)
             if candidate is None:
                 continue
             key = _seen_key(candidate)
-            if seen_store.is_seen(seen, key):
+            legacy_key = f"{candidate['pblanc_no']}:{candidate['model_no']}"
+            first_detected = not seen_store.is_seen(seen, key) and not seen_store.is_seen(seen, legacy_key)
+            newly_announced = candidate.get("announcement_date") == today
+            currently_open = bool(candidate.get("rcept_bgnde") and candidate.get("rcept_endde") and candidate["rcept_bgnde"] <= today <= candidate["rcept_endde"])
+            if not first_detected:
+                # Keep the daily report useful for a long-running watcher even
+                # after analysis has already been persisted.
+                digest.append({"candidate": candidate, "result": None, "narrative": None,
+                               "newly_announced": newly_announced, "currently_open": currently_open,
+                               "first_detected": False})
                 continue
             property_input = {k: v for k, v in candidate.items() if k in PROPERTY_INPUT_FIELDS and v is not None}
             if not property_input.get("name") or not property_input.get("unit_type"):
@@ -69,7 +90,9 @@ def run(as_of: str | None = None, config_dir: str | Path = "config", data_dir: s
                 time.sleep(6)  # stay under free-tier requests-per-minute limits
             summary = narrate.narrate(result, candidate, gemini_key)
             seen = seen_store.mark_seen(seen_path, seen, key, result["analysis_id"])
-            digest.append({"candidate": candidate, "result": result, "narrative": summary})
+            digest.append({"candidate": candidate, "result": result, "narrative": summary,
+                           "newly_announced": newly_announced, "currently_open": currently_open,
+                           "first_detected": True})
 
     digest_path = _write_digest(data_dir, as_of, digest)
     print(f"scanned {len(notices)} notices, {len(digest)} new candidates analyzed")
@@ -80,21 +103,32 @@ def run(as_of: str | None = None, config_dir: str | Path = "config", data_dir: s
 def _write_digest(data_dir: Path, as_of: str, digest: list[dict[str, Any]]) -> Path:
     folder = data_dir / "reports" / "_daily"
     folder.mkdir(parents=True, exist_ok=True)
-    date_str = as_of[:10]
+    date_str = kst_date(as_of)
     path = folder / f"{date_str}.md"
-    lines = [f"# 일일 신규 공고 스캔 ({date_str})", "", f"신규 후보 {len(digest)}건", ""]
+    new_count = sum(1 for item in digest if item.get("newly_announced"))
+    open_count = sum(1 for item in digest if item.get("currently_open"))
+    first_count = sum(1 for item in digest if item.get("first_detected"))
+    lines = [f"# 일일 신규 공고 스캔 ({date_str})", "", f"신규 후보 {first_count}건", f"신규 발표 {new_count}건 / 현재 접수 중 {open_count}건 / 최초 감지 {first_count}건", ""]
     for item in digest:
         c, r = item["candidate"], item["result"]
-        v = r["verdict"]
+        labels = []
+        if item.get("newly_announced"): labels.append("오늘 신규 발표")
+        if item.get("currently_open"): labels.append("현재 접수 중")
+        if item.get("first_detected"): labels.append("최초 감지")
         lines += [
             f"## {c['name']} ({c['unit_type']})",
+            f"- 공급유형: {c.get('supply_type', 'APT')} / 상태: {', '.join(labels) or '기존 공고'}",
             f"- 지역: {c['region']}",
             f"- 전용면적: {c['exclusive_area_m2']}㎡ / 가격: {c['price_krw']}원",
             f"- 접수기간: {c['rcept_bgnde']} ~ {c['rcept_endde']}",
-            f"- verdict: {v['status']} (confidence={v['confidence']})",
-            f"- 공식 공고: {c['official_url']}",
-            f"- 상세 리포트: data/reports/{r['property_slug']}/{r['analysis_id']}.json",
         ]
+        if r:
+            v = r["verdict"]
+            lines += [f"- verdict: {v['status']} (confidence={v['confidence']})",
+                      f"- 공식 공고: {c['official_url']}",
+                      f"- 상세 리포트: data/reports/{r['property_slug']}/{r['analysis_id']}.json"]
+        else:
+            lines.append("- 분석 리포트: 기존 분석 결과는 이미 저장됨")
         if item["narrative"]:
             lines += ["", item["narrative"]]
         lines.append("")
