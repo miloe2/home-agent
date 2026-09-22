@@ -238,5 +238,25 @@
   "2026910241:REMNANT:01": {
     "first_seen": "2026-09-21T00:11:27.432563+00:00",
     "analysis_id": "fa3931e6-5a16-40a1-b589-804d8f289660"
+  },
+  "2026910244:REMNANT:01": {
+    "first_seen": "2026-09-22T00:39:31.520007+00:00",
+    "analysis_id": "90a05bf4-2986-44dd-82b4-fc72ae9fc685"
+  },
+  "2026930031:REMNANT:01": {
+    "first_seen": "2026-09-22T00:40:00.096092+00:00",
+    "analysis_id": "8a363daf-839a-41a9-b2b0-ab62fc63a7c1"
+  },
+  "2026930031:REMNANT:02": {
+    "first_seen": "2026-09-22T00:40:20.075215+00:00",
+    "analysis_id": "60ddd52b-7a18-4fdb-97d9-98ccb07edebc"
+  },
+  "2026910236:REMNANT:01": {
+    "first_seen": "2026-09-22T00:40:41.339430+00:00",
+    "analysis_id": "6008f427-ccdc-4db6-9a05-6e8eb5bdfb28"
+  },
+  "2026910236:REMNANT:02": {
+    "first_seen": "2026-09-22T00:41:01.547989+00:00",
+    "analysis_id": "c6c3ffe3-0abd-4479-86dd-1f3c060beba6"
   }
 }
